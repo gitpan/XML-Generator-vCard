@@ -1,0 +1,19 @@
+use strict;
+use ExtUtils::MakeMaker;
+
+WriteMakefile(
+	      'NAME'	=> 'XML::Generator::vCard',
+	      ($[ >= 5.005) ?
+	      (AUTHOR   => 'Aaron Straup Cope (ascope@cpan.org)',
+	       ABSTRACT => 'Generate SAX 2 events for vCard 3.0') : (),
+	      'VERSION_FROM' => 'lib/XML/Generator/vCard.pm',
+	      'PREREQ_PM'    => {
+		  'XML::SAX'      => '0.12',
+		  'Text::vCard'   => '1.8',
+		  'Encode'        => '0',
+		  'Memoize'       => '0',
+		  'Test::More'    => '0',
+				},
+	      dist	        => {COMPRESS => 'gzip', SUFFIX => 'tar.gz'},
+);
+ 
