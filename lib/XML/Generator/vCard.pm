@@ -1,10 +1,10 @@
-# $Id: vCard.pm,v 1.24 2004/10/17 22:53:17 asc Exp $
+# $Id: vCard.pm,v 1.25 2004/11/16 17:02:42 asc Exp $
 use strict;
 
 package XML::Generator::vCard;
 use base qw (XML::SAX::Base);
 
-$XML::Generator::vCard::VERSION = '1.1';
+$XML::Generator::vCard::VERSION = '1.2';
 
 =head1 NAME
 
@@ -1075,11 +1075,11 @@ namespaces :
 
 =head1 VERSION
 
-1.1
+1.2
 
 =head1 DATE
 
-$Date: 2004/10/17 22:53:17 $
+$Date: 2004/11/16 17:02:42 $
 
 =head1 AUTHOR
 
@@ -1097,7 +1097,12 @@ http://www.ietf.org/rfc/rfc2425.txt
 
 =head1 BUGS
 
-Please report all bugs via http://rt.cpan.org
+vCards containg binary PHOTO images may cause Perl to segfault on
+Mac OSX and come flavours of Linux (but not FreeBSD.) The source of
+this problem has been traced, I think, to a regular expression issue
+in the Perl Text::ParseWords library. A bug report has been filed.
+
+Please report all other bugs via http://rt.cpan.org
 
 =head1 LICENSE
 
