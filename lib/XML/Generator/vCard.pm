@@ -1,10 +1,10 @@
-# $Id: vCard.pm,v 1.25 2004/11/16 17:02:42 asc Exp $
+# $Id: vCard.pm,v 1.28 2004/12/28 23:31:29 asc Exp $
 use strict;
 
 package XML::Generator::vCard;
-use base qw (XML::SAX::Base);
+use base qw (XML::Generator::vCard::Base);
 
-$XML::Generator::vCard::VERSION = '1.2';
+$XML::Generator::vCard::VERSION = '1.3';
 
 =head1 NAME
 
@@ -40,7 +40,6 @@ perfectly good place to start from.
 use Encode;
 use MIME::Base64;
 use Text::vCard::Addressbook;
-use Memoize;
 
 use constant NS => {"vCard" => "x-urn:cpan:ascope:xml-generator-vcard#",
 		    "foaf"  => "http://xmlns.com/foaf/0.1/"};
@@ -49,7 +48,16 @@ use constant VCARD_VERSION => "3.0";
 use constant VCARD_CLASS   => "PUBLIC";
 
 sub import {
-    &memoize("_prepare_name");
+    my $pkg = shift;
+    $pkg->SUPER::import(@_);
+
+    my $ns = $pkg->namespaces();
+    $ns->{ vCard } = "x-urn:cpan:ascope:xml-generator-vcard#";
+    
+    no strict "refs";
+    * { join("::",$pkg,"namespaces") } = sub { return $ns; };
+
+    return 1;
 }
 
 =head1 PACKAGE METHODS
@@ -805,16 +813,6 @@ sub _im_services {
 	    "icq"    => "foaf:icqChatID"};
 }
 
-=head2 $obj->_namespaces()
-
-Returns a hash reference of prefix - URI pairs.
-
-=cut
-
-sub _namespaces {
-    return NS;
-}
-
 sub _pcdata {
   my $self = shift;
   my $data = shift;
@@ -888,7 +886,7 @@ sub start_document {
     $self->xml_decl({Version  => "1.0",
 		     Encoding => "UTF-8"});
 
-    my $ns = $self->_namespaces();
+    my $ns = $self->namespaces();
 
     foreach my $prefix (keys %$ns) {
 	$self->start_prefix_mapping({Prefix       => $prefix,
@@ -901,7 +899,7 @@ sub start_document {
 sub end_document {
     my $self = shift;
 
-    foreach my $prefix (keys %{$self->_namespaces()}) {
+    foreach my $prefix (keys %{$self->namespaces()}) {
 	$self->end_prefix_mapping({Prefix => $prefix});
     }
 
@@ -913,8 +911,8 @@ sub start_element {
   my $self = shift;
   my $data = shift;
 
-  my $name  = &_prepare_name($data->{Name});
-  my $attrs = &_prepare_attrs($data->{Attributes});
+  my $name  = $self->prepare_qname($data->{Name});
+  my $attrs = $self->prepare_attrs($data->{Attributes});
 
   $self->SUPER::start_element({ %$name, %$attrs });
 }
@@ -923,46 +921,9 @@ sub end_element {
   my $self = shift;
   my $data = shift;
 
-  my $name = &_prepare_name($data->{Name});
+  my $name = $self->prepare_qname($data->{Name});
 
   $self->SUPER::end_element($name);
-}
-
-# memoized
-
-sub _prepare_name {
-    my $qname  = shift;
-
-    $qname =~ /^([^:]+):(.*)$/;
-
-    my $prefix = $1;
-    my $name   = $2;
-
-    my $ns     = NS->{ $prefix };
-	
-    return {Name         => $qname,
-	    LocalName    => $name,
-	    Prefix       => $prefix,
-	    NamespaceURI => $ns};
-}
-
-sub _prepare_attrs {
-    my $attrs = shift;
-
-    foreach my $uri (keys %$attrs) {
-	
-	my $data       = &_prepare_name($attrs->{$uri}->{Name});
-	$data->{Value} = $attrs->{$uri}->{Value};
-
-	my $fq_uri = sprintf("{%s}%s",
-			     $data->{NamespaceURI},
-			     $data->{LocalName});
-
-	$attrs->{ $fq_uri } = $data;
-	delete $attrs->{$uri};
-    }
-
-    return {Attributes => $attrs};
 }
 
 sub DESTROY {}
@@ -1057,10 +1018,10 @@ namespaces :
  package MyGenerator;
  use base qw (XML::Generator::vCard);
 
- sub _namespaces {
+ sub namespaces {
      my $self = shift;
      
-     my $ns = $self->SUPER::_namespaces();
+     my $ns = $self->SUPER::namespaces();
      $ns->{ "foo" } = "x-urn:foo:bar#";
 
      return $ns;
@@ -1075,11 +1036,11 @@ namespaces :
 
 =head1 VERSION
 
-1.2
+1.3
 
 =head1 DATE
 
-$Date: 2004/11/16 17:02:42 $
+$Date: 2004/12/28 23:31:29 $
 
 =head1 AUTHOR
 
@@ -1089,7 +1050,7 @@ Aaron Straup Cope E<lt>ascope@cpan.orgE<gt>
 
 L<Text::vCard>
 
-L<XML::SAX>
+L<XML::Generator::vCard::Base>
 
 http://www.ietf.org/rfc/rfc2426.txt
 
@@ -1113,4 +1074,4 @@ under the same terms as Perl itself.
 
 =cut
 
-return 1;
+return 1
