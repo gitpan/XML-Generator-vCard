@@ -1,5 +1,10 @@
 Revision history for Perl extension XML::Generator::vCard
 
+1.1	 Sun Oct 17 2004
+
+	 - UPDATED to reflect changes in Text::vCard
+	   1.9
+
 1.0	 Fri Oct 15 2004
 
 	 - updated default xmlns to 'x-urn:cpan:ascope:xml-generator-vcard#'

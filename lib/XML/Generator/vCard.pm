@@ -1,10 +1,10 @@
-# $Id: vCard.pm,v 1.23 2004/10/08 18:29:48 asc Exp $
+# $Id: vCard.pm,v 1.24 2004/10/17 22:53:17 asc Exp $
 use strict;
 
 package XML::Generator::vCard;
 use base qw (XML::SAX::Base);
 
-$XML::Generator::vCard::VERSION = '1.0';
+$XML::Generator::vCard::VERSION = '1.1';
 
 =head1 NAME
 
@@ -589,10 +589,12 @@ sub _render_org {
 			    Value => $name});
 	} 
 
-	if (my $unit = $o->unit()) {
+	if (my $units = $o->unit()) {
 
-	    $self->_pcdata({Name  => "vCard:orgunit",
-			    Value => $unit});
+	    foreach my $u (grep { /\w/ } @$units) {
+		$self->_pcdata({Name  => "vCard:orgunit",
+				Value => $u});
+	    }
 	}
 
 	$self->end_element({Name => "vCard:org"});
@@ -1073,11 +1075,11 @@ namespaces :
 
 =head1 VERSION
 
-1.0
+1.1
 
 =head1 DATE
 
-$Date: 2004/10/08 18:29:48 $
+$Date: 2004/10/17 22:53:17 $
 
 =head1 AUTHOR
 
